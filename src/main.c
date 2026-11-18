@@ -13,7 +13,16 @@ void process_input(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, 1);
     }
+
 }
+
+const char *vertexShaderSource = "#version 330 core\n"
+"layout (location = 0) in vec3 aPos;\n"
+"void main()\n"
+"{\n"
+" gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"}\0";
+
 
 int main(void) {
     // 1. Initialize GLFW and configure OpenGL 3.3 Core Profile
@@ -45,10 +54,39 @@ int main(void) {
         glfwTerminate();
         return -1;
     }
+    // !!!!!!!!!!!!!!! Handle Stuff before compiling !!!!!!!!!!!!!!!!!!!!!!!!!! 
+    // Shader Stuff ||
+    unsigned int vertexShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
 
+
+    //Try making a triangle
+
+    // Create a Vertex I think
+    //unsigned int VBO;
+    //Put that point into a Engine to Generate, Create 1 Vertex at one Point
+    //glGenBuffers(1, &VBO);
+    //Generate several Buffer for multiple points at once
+    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    //
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success){
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+    }
     // 4. Main render loop
+    // !!!!!!!!!!!!!!!! MAIN LOOP !!!!!!!!!!!!!!!!!!!!!!!! ||
     while (!glfwWindowShouldClose(window)) {
+
+        //Input
         process_input(window);
+
+        //Render Input
 
         // Clear the screen with a dark teal color
         glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
@@ -60,6 +98,6 @@ int main(void) {
     }
 
     // 5. Clean up allocated resources
-    glfwTerminate();
+    (void)glfwTerminate();
     return 0;
 }

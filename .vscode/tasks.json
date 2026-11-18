@@ -15,6 +15,9 @@
                 "-lglfw3",
                 "-lopengl32",
                 "-lgdi32",
+                "-lwinmm",
+                "-luser32",
+                "-lshell32",
                 "-o",
                 "${workspaceFolder}/app.exe"
             ],
