@@ -23,6 +23,14 @@ const char *vertexShaderSource = "#version 330 core\n"
 " gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 "}\0";
 
+const char *fragmentShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main(){\n"
+" FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"}\n"
+;
+
+unsigned int compileShader(unsigned int type, const char* source);
 
 int main(void) {
     // 1. Initialize GLFW and configure OpenGL 3.3 Core Profile
@@ -56,33 +64,52 @@ int main(void) {
     }
     // !!!!!!!!!!!!!!! Handle Stuff before compiling !!!!!!!!!!!!!!!!!!!!!!!!!! 
     // Shader Stuff ||
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
+    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
 
+    //Fragment Shader ||
+    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+
+    // Finish Compiling Shader ||
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
     //Try making a triangle
-
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f, // left  
+         0.5f, -0.5f, 0.0f, // right 
+         0.0f,  0.5f, 0.0f  // top   
+    }; 
     // Create a Vertex I think
-    //unsigned int VBO;
+    unsigned int VBO;
+    unsigned int VAO;
     //Put that point into a Engine to Generate, Create 1 Vertex at one Point
-    //glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
     //Generate several Buffer for multiple points at once
-    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindVertexArray(VAO);
 
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success){
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-    }
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindVertexArray(0);
+
+    // uncomment this call to draw in wireframe polygons.
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    
     // 4. Main render loop
     // !!!!!!!!!!!!!!!! MAIN LOOP !!!!!!!!!!!!!!!!!!!!!!!! ||
     while (!glfwWindowShouldClose(window)) {
-
         //Input
         process_input(window);
 
@@ -92,12 +119,35 @@ int main(void) {
         glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
         // Swap front/back buffers and poll IO events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    //De-allocate all   resources after run(Is option but good practice for less errors)
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shaderProgram);
+
 
     // 5. Clean up allocated resources
     (void)glfwTerminate();
     return 0;
+}
+
+unsigned int compileShader(unsigned int type, const char* source){
+    unsigned int shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success){
+        glGetShaderInfoLog(shader, 512, NULL, infoLog);
+        printf("ERROR::SHADER::COMPILATION_FAILED\n%s\n", infoLog);
+    }
+    return shader;
 }
