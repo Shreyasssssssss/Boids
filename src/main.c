@@ -20,16 +20,17 @@ void process_input(GLFWwindow* window) {
 const char *vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "layout (location = 1) in vec3 aColor;\n"
-"out vec3 ourColor;\n"
+"out vec3 ourColor;"
+"uniform mat4 transform;\n"
 "void main()\n"
 "{\n"
-" gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+" gl_Position = transform * vec4(aPos, 1.0f);\n"
 " ourColor = aColor;\n"
-"}\0";
+"}\n";
 
 const char *fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
-"in vec3 ourColor;\n"
+"in vec3 ourColor;"
 "void main(){\n"
 " FragColor = vec4(ourColor, 1.0);\n"
 "}\n"
@@ -116,6 +117,7 @@ float vertices[] = {
     // uncomment this call to draw in wireframe polygons.
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+
     
     // 4. Main render loop
     // !!!!!!!!!!!!!!!! MAIN LOOP !!!!!!!!!!!!!!!!!!!!!!!! ||
@@ -129,7 +131,28 @@ float vertices[] = {
         glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        //Our coords, x, y ,z , w(used to be able to transform z)
+        //vec4 vec = {1.0f, 0.0f, 0.0f, 1.0f};
+        //Translate amount
+        //vec3 translation = {1.0f, 1.0f, 0.0f};
+        //Create a Matix of 4x4
+        //mat4 trans = GLM_MAT4_IDENTITY_INIT;
+        //Apply translation to a mat4 so that it is correctly applied
+        //glm_translate(trans, translation);
+        //Get result after translation get result
+        //vec4 result;
+        //glm_mat4_mulv(trans, vec, result);
+
+        mat4 trans;
+        glm_mat4_identity(trans);
+        //glm_translate(trans, (vec3){0.5f, -0.5f, 0.0f});
+        glm_rotate(trans, (float)glfwGetTime(), (vec3){0.0f, 0.0f, 1.0f});
+        //glm_scale(trans, (vec3){0.5f,0.5f, 0.5f});
+
         glUseProgram(shaderProgram);
+        unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, (float *)trans);
+        //Draw triangle every frame
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
