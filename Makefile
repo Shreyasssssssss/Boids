@@ -1,13 +1,13 @@
 CC := gcc
 CFLAGS := -Wall -Wextra -std=c11 -Iinclude
-CPPFLAGS := -MMD -MP
+CPPFLAGS := -MMD -MP -Icglm/include
 
 SRC_DIR := src
 OBJ_DIR := build
 TARGET := app.exe
 
-SRCS := $(SRC_DIR)/main.c $(SRC_DIR)/glad.c
-OBJS := $(OBJ_DIR)/main.o $(OBJ_DIR)/glad.o
+SRCS := $(SRC_DIR)/main.c $(SRC_DIR)/glad.c $(SRC_DIR)/boids.c
+OBJS := $(OBJ_DIR)/main.o $(OBJ_DIR)/glad.o $(OBJ_DIR)/boids.o
 DEPS := $(OBJS:.o=.d)
 
 ifeq ($(OS), Windows_NT)
@@ -31,6 +31,10 @@ $(OBJ_DIR)/main.o: $(SRC_DIR)/main.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/glad.o: $(SRC_DIR)/glad.c
+	mkdir -p "$(OBJ_DIR)"
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/boids.o: $(SRC_DIR)/boids.c
 	mkdir -p "$(OBJ_DIR)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
